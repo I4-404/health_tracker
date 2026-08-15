@@ -28,13 +28,18 @@ jobs:
           channel: stable
           cache: true
 
-      - name: Check Flutter and Dart
+      - name: Check Flutter
         run: |
           flutter --version
           dart --version
 
       - name: Get dependencies
         run: flutter pub get
+
+      - name: Fix old fab_circular_menu package
+        run: |
+          FILE="$HOME/.pub-cache/hosted/pub.dev/fab_circular_menu-1.0.2/lib/fab_circular_menu.dart"
+          sed -i 's/Theme\.of(context)\.accentColor/Theme.of(context).colorScheme.secondary/g' "$FILE"
 
       - name: Build APK
         run: flutter build apk --release
