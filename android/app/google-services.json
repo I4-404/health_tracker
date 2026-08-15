@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "192018319076",
+    "project_id": "studio-4109810773-ad81c",
+    "storage_bucket": "studio-4109810773-ad81c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:192018319076:android:2ca5a634e4888e9a07cef1",
+        "android_client_info": {
+          "package_name": "com.example.health_tracker"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCd5gVf9O7ZCP476yWc4DwcVn0S0QDggKE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
