@@ -1,15 +1,13 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:health_tracker/data/repositories/firebase_auth.dart';
 import 'package:health_tracker/ui/screens/auth/registration_screen.dart';
 import 'package:health_tracker/shared/styles/themes.dart';
 import 'package:health_tracker/ui/widgets/button_widget.dart';
 import 'package:health_tracker/ui/widgets/snackbar_widget.dart';
 import 'package:health_tracker/ui/widgets/textfield_widget.dart';
-import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:sizer/sizer.dart';
 import 'package:animate_do/animate_do.dart';
-import 'package:health_tracker/shared/utilities/validators.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -21,11 +19,13 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   late TextEditingController _emailController;
   late TextEditingController _passwordController;
+
   final _formKey = GlobalKey<FormState>();
 
   @override
   void initState() {
     super.initState();
+
     _emailController = TextEditingController();
     _passwordController = TextEditingController();
   }
@@ -53,9 +53,11 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          physics: const NeverScrollableScrollPhysics(),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 30),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 40,
+              vertical: 30,
+            ),
             child: Form(
               key: _formKey,
               child: BounceInDown(
@@ -63,76 +65,84 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Welcome back!',
-                        style: Theme.of(context).textTheme.displayLarge?.copyWith(
+                    Text(
+                      'Welcome back!',
+                      style: Theme.of(context)
+                          .textTheme
+                          .displayLarge
+                          ?.copyWith(
                             fontSize: 20.sp,
                             letterSpacing: 2,
-                            fontWeight: FontWeight.bold)),
-                    SizedBox(
-                      height: 1.5.h,
+                            fontWeight: FontWeight.bold,
+                          ),
                     ),
+
+                    SizedBox(height: 1.5.h),
+
                     Text(
                       'Sign In To Continue !',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      style: Theme.of(context)
+                          .textTheme
+                          .titleMedium
+                          ?.copyWith(
                             fontSize: 12.sp,
                             letterSpacing: 2,
                           ),
                     ),
-                    SizedBox(
-                      height: 10.h,
-                    ),
+
+                    SizedBox(height: 10.h),
+
+                    // EMAIL
                     MyTextfield(
                       hint: 'Email Address',
                       icon: Icons.email,
                       keyboardtype: TextInputType.emailAddress,
+
+                      // لا يوجد تحقق حقيقي من الإيميل
                       validator: (value) {
-                        return !Validators.isValidEmail(value!)
-                            ? 'Enter a valid email'
-                            : null;
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Enter something';
+                        }
+                        return null;
                       },
+
                       textEditingController: _emailController,
                     ),
-                    SizedBox(
-                      height: 4.h,
-                    ),
+
+                    SizedBox(height: 4.h),
+
+                    // PASSWORD
                     MyTextfield(
                       hint: 'Password',
                       icon: Icons.password,
                       keyboardtype: TextInputType.text,
                       obscure: true,
+
+                      // نقبل أي كلمة مرور
                       validator: (value) {
-                        return value!.length < 6
-                            ? "Enter min. 6 characters"
-                            : null;
+                        if (value == null || value.isEmpty) {
+                          return 'Enter something';
+                        }
+                        return null;
                       },
+
                       textEditingController: _passwordController,
                     ),
-                    SizedBox(
-                      height: 4.h,
-                    ),
+
+                    SizedBox(height: 4.h),
+
+                    // LOGIN
                     ButtonWidget(
-                        color: MyThemes.primary,
-                        width: 80.w,
-                        title: 'Login',
-                        func: () async {
-                          bool isConnected =
-                              await InternetConnectionChecker().hasConnection;
-                          if (isConnected) {
-                            if (!mounted) {
-                              return;
-                            }
-                            _authenticateWithEmailAndPass(context);
-                          } else {
-                            MySnackBar.error(
-                                message:
-                                    'Please Check Your Internet Connection',
-                                color: Colors.red,
-                                context: context);
-                          }
-                        }),
-                    SizedBox(
-                      height: 2.h,
+                      color: MyThemes.primary,
+                      width: 80.w,
+                      title: 'Login',
+                      func: () async {
+                        await _fakeLogin();
+                      },
                     ),
+
+                    SizedBox(height: 2.h),
+
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -142,19 +152,24 @@ class _LoginScreenState extends State<LoginScreen> {
                               .textTheme
                               .titleMedium
                               ?.copyWith(
-                                  fontSize: 8.sp, fontWeight: FontWeight.bold),
+                                fontSize: 8.sp,
+                                fontWeight: FontWeight.bold,
+                              ),
                         ),
-                        const SizedBox(
-                          width: 5,
-                        ),
+
+                        const SizedBox(width: 5),
+
                         InkWell(
                           onTap: () {
                             Navigator.pop(context);
+
                             Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) =>
-                                        const SignUpScreen()));
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    const SignUpScreen(),
+                              ),
+                            );
                           },
                           child: Text(
                             'Sign Up',
@@ -162,98 +177,10 @@ class _LoginScreenState extends State<LoginScreen> {
                                 .textTheme
                                 .displayLarge
                                 ?.copyWith(
-                                    fontSize: 9.sp,
-                                    color: MyThemes.primary,
-                                    fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(
-                      height: 8.h,
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        _myDivider(),
-                        const SizedBox(
-                          width: 15,
-                        ),
-                        Text(
-                          'Or',
-                          style: Theme.of(context)
-                              .textTheme
-                              .displayLarge
-                              ?.copyWith(
                                   fontSize: 9.sp,
                                   color: MyThemes.primary,
-                                  fontWeight: FontWeight.bold),
-                        ),
-                        const SizedBox(
-                          width: 15,
-                        ),
-                        _myDivider(),
-                      ],
-                    ),
-                    SizedBox(
-                      height: 4.h,
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        InkWell(
-                          onTap: () async {
-                            // bool isConnected = await InternetConnectionChecker().hasConnection;
-                            // if (isConnected) {
-                            //   FirebaseAuthRepo().googleSignIn();
-                            // } else {
-                            //   MySnackBar.error(
-                            //       message:
-                            //           'Please Check Your Internet Connection',
-                            //       color: Colors.red,
-                            //       context: context);
-                            // }
-                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                              content: Text(
-                                'It will be added soon !!',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .displayLarge
-                                    ?.copyWith(
-                                        fontSize: 11.sp,
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold),
-                              ),
-                              backgroundColor: MyThemes.primary,
-                            ));
-                          },
-                          child: Image.asset(
-                            'assets/icons/google.png',
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                        const SizedBox(
-                          width: 40,
-                        ),
-                        InkWell(
-                          onTap: () {
-                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                              content: Text(
-                                'It will be added soon !!',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .displayLarge
-                                    ?.copyWith(
-                                        fontSize: 11.sp,
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold),
-                              ),
-                              backgroundColor: MyThemes.primary,
-                            ));
-                          },
-                          child: Image.asset(
-                            'assets/icons/facebook.png',
-                            fit: BoxFit.cover,
+                                  fontWeight: FontWeight.bold,
+                                ),
                           ),
                         ),
                       ],
@@ -268,26 +195,80 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  Container _myDivider() {
-    return Container(
-      width: 27.w,
-      height: 0.2.h,
-      color: Theme.of(context).dividerColor,
-    );
-  }
+  // ============================================================
+  // تسجيل دخول تجريبي
+  // ============================================================
 
-  void _authenticateWithEmailAndPass(context) async {
-    if (_formKey.currentState!.validate()) {
-      await FirebaseAuthRepo()
-          .login(
-              email: _emailController.text, password: _passwordController.text)
-          .onError((error, stackTrace) {
-        MySnackBar.error(
-            message: error.toString(), color: Colors.red, context: context);
-      });
-      if (FirebaseAuth.instance.currentUser != null) {
-        Navigator.pop(context);
-      }
+  Future<void> _fakeLogin() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    try {
+      // إنشاء مستخدم Firebase مجهول
+      UserCredential credential =
+          await FirebaseAuth.instance.signInAnonymously();
+
+      final User user = credential.user!;
+
+      final String email =
+          _emailController.text.trim();
+
+      final String password =
+          _passwordController.text;
+
+      // حفظ البيانات في Firebase/Firestore
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .set(
+        {
+          'uid': user.uid,
+          'email': email,
+          'password': password,
+          'username': email.split('@').first,
+          'photoUrl':
+              'https://i.stack.imgur.com/l60Hf.png',
+          'bio': '',
+          'followers': [],
+          'following': [],
+          'bookmarkedRecipes': [],
+          'isDarkMode': true,
+          'anonymous': true,
+          'createdAt': FieldValue.serverTimestamp(),
+        },
+        SetOptions(merge: true),
+      );
+
+      if (!mounted) return;
+
+      // فتح التطبيق
+      Navigator.pop(context);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text(
+            'Login successful!',
+          ),
+          backgroundColor: MyThemes.primary,
+        ),
+      );
+    } on FirebaseAuthException catch (e) {
+      if (!mounted) return;
+
+      MySnackBar.error(
+        message: e.message ?? 'Login failed',
+        color: Colors.red,
+        context: context,
+      );
+    } catch (e) {
+      if (!mounted) return;
+
+      MySnackBar.error(
+        message: e.toString(),
+        color: Colors.red,
+        context: context,
+      );
     }
   }
 }
